@@ -1,25 +1,48 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Library, GraduationCap, BookMarked, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Library, GraduationCap, BookMarked, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCollection } from '../hooks/useCollection';
 import { ROLES } from '../utils/roles';
 
 export default function Register() {
   const { registerWithEmail } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: ROLES.STUDENT });
+  const [searchParams] = useSearchParams();
+  const inviteCode = (searchParams.get('school') || '').trim().toUpperCase();
+
+  const { data: schools, loading: schoolsLoading } = useCollection('schools');
+  const activeSchools = useMemo(() => schools.filter((s) => s.active !== false), [schools]);
+  const invitedSchool = useMemo(
+    () => (inviteCode ? activeSchools.find((s) => (s.joinCode || '').toUpperCase() === inviteCode) : null),
+    [activeSchools, inviteCode]
+  );
+
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: ROLES.STUDENT, schoolId: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Once the invited school resolves (or we know there's no match), lock it in.
+  useEffect(() => {
+    if (invitedSchool) set('schoolId', invitedSchool.id);
+  }, [invitedSchool?.id]);
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
+
+  const needsSchoolPicker = !schoolsLoading && !invitedSchool && activeSchools.length > 0;
+  const invalidInvite = !schoolsLoading && inviteCode && !invitedSchool;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     if (form.password.length < 6) {
       setError('Password must be at least 6 characters.');
+      return;
+    }
+    if (needsSchoolPicker && !form.schoolId) {
+      setError('Please choose your school.');
       return;
     }
     setBusy(true);
@@ -53,6 +76,22 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="catalog-card p-6 space-y-4">
+            {invitedSchool && (
+              <div className="flex items-center gap-2 rounded-lg bg-brass-500/10 border border-brass-500/30 px-3 py-2.5">
+                <CheckCircle2 size={16} className="text-brass-600 shrink-0" />
+                <p className="text-sm text-ink-700">
+                  Joining <span className="font-medium">{invitedSchool.name}</span>
+                </p>
+              </div>
+            )}
+            {invalidInvite && (
+              <div className="flex items-start gap-2 rounded-lg bg-overdue-500/10 border border-overdue-500/30 px-3 py-2.5">
+                <AlertTriangle size={16} className="text-overdue-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-ink-700">
+                  That invite link is invalid or no longer active. Choose your school below, or ask your librarian for a new link.
+                </p>
+              </div>
+            )}
             <div>
               <label className="label">Full name</label>
               <input className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
@@ -65,6 +104,17 @@ export default function Register() {
               <label className="label">Password</label>
               <input className="input" type="password" required value={form.password} onChange={(e) => set('password', e.target.value)} />
             </div>
+            {needsSchoolPicker && (
+              <div>
+                <label className="label">School</label>
+                <select className="input" required value={form.schoolId} onChange={(e) => set('schoolId', e.target.value)}>
+                  <option value="">Choose your school…</option>
+                  {activeSchools.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="label">I am a</label>
               <select className="input" value={form.role} onChange={(e) => set('role', e.target.value)}>

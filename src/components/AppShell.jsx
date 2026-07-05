@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Search, Bookmark, History, BookOpen,
   UploadCloud, FolderKanban, ScanLine, BookMarked, Tags,
   ClipboardCheck, Users, AlertTriangle, BarChart3, Megaphone,
-  School, ShieldCheck, LogOut, Menu, X, Library
+  School, ShieldCheck, LogOut, Menu, X, Library, Share2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLE_LABEL, ROLES } from '../utils/roles';
@@ -30,6 +30,7 @@ const NAV_BY_ROLE = {
     { to: '/librarian/categories', label: 'Categories', icon: Tags },
     { to: '/librarian/resources', label: 'Approve Resources', icon: ClipboardCheck },
     { to: '/librarian/users', label: 'Manage Accounts', icon: Users },
+    { to: '/librarian/invite', label: 'Invite People', icon: Share2 },
     { to: '/librarian/overdue', label: 'Overdue Tracking', icon: AlertTriangle },
     { to: '/librarian/reports', label: 'Reports', icon: BarChart3 },
     { to: '/librarian/announcements', label: 'Announcements', icon: Megaphone }

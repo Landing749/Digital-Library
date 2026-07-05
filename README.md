@@ -79,6 +79,26 @@ database.rules.json   Firebase Realtime Database security rules
    - Sign back in — you'll land on the Super Admin dashboard, where you can
      add schools and promote other accounts to librarian from then on.
 
+**If you're upgrading an existing deployment**, re-deploy `database.rules.json`
+— it now makes `schools` publicly readable (so the Register page can resolve
+an invite code before anyone signs in) and allows a brand-new account to set
+its own `schoolId` once at registration time.
+
+## Sharing a school's invite link
+
+Every school gets a short invite code and a shareable registration link
+(`.../#/register?school=CODE`) the moment it's added, from **Schools** in the
+Super Admin dashboard. Anyone who registers through that link is dropped
+straight into that school — no manual sorting afterwards.
+
+- **Super admins** can copy or regenerate any school's link from **Schools**.
+  Regenerating immediately invalidates the old link.
+- **Librarians/admins** can copy or regenerate their own school's link from
+  **Invite People** in the sidebar, without needing the super admin.
+- If someone registers *without* a link (or with an expired one), they're
+  shown a dropdown to pick their school manually instead — registration
+  never silently fails.
+
 ## 2. Cloudinary setup
 
 Already wired into `src/cloudinary.js`:
@@ -146,5 +166,5 @@ announcements/{id}     { title, body, createdAt }
 |---|---|
 | Student | search/browse, read online, download, bookmark, borrow, view own history |
 | Teacher | upload/manage own resources, everything a student can do for browsing |
-| Librarian / Admin | manage books & categories, approve resources, manage accounts, circulation & scanning, overdue tracking, reports, announcements |
-| Super Admin | manage schools, promote accounts to librarian/admin, platform-wide reports |
+| Librarian / Admin | manage books & categories, approve resources, manage accounts (own school), bulk activate/deactivate + CSV export, circulation & scanning, overdue tracking, reports, announcements, share/regenerate own school's invite link |
+| Super Admin | manage schools (edit, activate/deactivate, share/regenerate invite links, per-school member counts), promote accounts to librarian/admin (filterable by school), platform-wide reports with per-school breakdown + CSV export |
