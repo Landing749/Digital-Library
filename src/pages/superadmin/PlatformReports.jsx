@@ -23,20 +23,6 @@ export default function PlatformReports() {
     return { byRole, activeLoans, overdue, returned };
   }, [users, records]);
 
-  const perSchool = useMemo(() => {
-    return schools.map((s) => {
-      const members = users.filter((u) => u.schoolId === s.id);
-      return {
-        id: s.id,
-        name: s.name,
-        active: s.active !== false,
-        students: members.filter((u) => u.role === ROLES.STUDENT).length,
-        teachers: members.filter((u) => u.role === ROLES.TEACHER).length,
-        admins: members.filter((u) => u.role === ROLES.LIBRARIAN).length
-      };
-    }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [schools, users]);
-
   function exportCsv() {
     const rows = [
       ['Metric', 'Value'],
@@ -49,12 +35,9 @@ export default function PlatformReports() {
       ['Resources uploaded', resources.length],
       ['Total loans (all time)', records.length],
       ['Active loans', stats.activeLoans],
-      ['Overdue loans', stats.overdue],
-      [],
-      ['School', 'Status', 'Students', 'Teachers', 'Admins'],
-      ...perSchool.map((s) => [s.name, s.active ? 'active' : 'inactive', s.students, s.teachers, s.admins])
+      ['Overdue loans', stats.overdue]
     ];
-    const csv = rows.map((row) => row.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csv = rows.map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -86,22 +69,6 @@ export default function PlatformReports() {
         <Stat label="Teachers" value={stats.byRole.teacher} />
         <Stat label="Active loans" value={stats.activeLoans} />
         <Stat label="Overdue" value={stats.overdue} alert={stats.overdue > 0} />
-      </div>
-
-      <h2 className="font-display text-xl mt-8">By school</h2>
-      <div className="catalog-card divide-y divide-ink-900/10 mt-3">
-        {perSchool.length === 0 && <p className="px-4 py-4 text-sm text-ink-500">No schools yet.</p>}
-        {perSchool.map((s) => (
-          <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
-            <div className="flex items-center gap-2 min-w-0">
-              <p className="font-display truncate">{s.name}</p>
-              {!s.active && <span className="stamp-overdue text-[10px]">Inactive</span>}
-            </div>
-            <p className="text-ink-500 text-xs">
-              {s.students} student(s) · {s.teachers} teacher(s) · {s.admins} admin(s)
-            </p>
-          </div>
-        ))}
       </div>
     </AppShell>
   );

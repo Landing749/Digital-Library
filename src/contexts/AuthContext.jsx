@@ -36,10 +36,10 @@ export function AuthProvider({ children }) {
     return unsub;
   }, [firebaseUser]);
 
-  async function registerWithEmail({ name, email, password, role, schoolId }) {
+  async function registerWithEmail({ name, email, password, role }) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: name });
-    await createUserProfile(cred.user.uid, { name, email, role, schoolId });
+    await createUserProfile(cred.user.uid, { name, email, role });
     return cred.user;
   }
 
@@ -63,16 +63,14 @@ export function AuthProvider({ children }) {
     return cred.user;
   }
 
-  async function createUserProfile(uid, { name, email, role, schoolId }) {
-    const profile = {
+  async function createUserProfile(uid, { name, email, role }) {
+    await set(ref(db, `users/${uid}`), {
       name,
       email,
       role: role || ROLES.STUDENT,
       status: 'active',
       createdAt: serverTimestamp()
-    };
-    if (schoolId) profile.schoolId = schoolId;
-    await set(ref(db, `users/${uid}`), profile);
+    });
   }
 
   async function logout() {

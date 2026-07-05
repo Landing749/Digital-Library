@@ -15,20 +15,14 @@
           ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')"
         },
         "schoolId": {
-          ".write": "auth != null && ((auth.uid === $uid && !data.exists()) || root.child('users').child(auth.uid).child('role').val() === 'superadmin')"
+          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'superadmin'"
         }
       }
     },
 
     "schools": {
-      ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'superadmin'",
-      ".indexOn": ["joinCode"],
-      "$schoolId": {
-        "joinCode": {
-          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'superadmin' || (root.child('users').child(auth.uid).child('role').val() === 'librarian' && root.child('users').child(auth.uid).child('schoolId').val() === $schoolId))"
-        }
-      }
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'superadmin'"
     },
 
     "categories": {

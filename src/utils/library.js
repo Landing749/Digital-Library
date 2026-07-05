@@ -112,50 +112,14 @@ export async function setUserStatus(uid, status) {
 /* Super admin: schools & school-admin assignment                         */
 /* ---------------------------------------------------------------------- */
 
-// Excludes visually-ambiguous characters (0/O, 1/I) so codes are easy to
-// read aloud or copy off a printed flyer.
-const JOIN_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-export function generateJoinCode(length = 6) {
-  let code = '';
-  for (let i = 0; i < length; i++) {
-    code += JOIN_CODE_ALPHABET[Math.floor(Math.random() * JOIN_CODE_ALPHABET.length)];
-  }
-  return code;
-}
-
-/** Builds a shareable registration link that pre-selects a school on the Register page. */
-export function buildJoinLink(joinCode) {
-  const base = `${window.location.origin}${window.location.pathname}`;
-  return `${base}#/register?school=${joinCode}`;
-}
-
 export async function createSchool({ name, address }) {
   const schoolRef = push(ref(db, 'schools'));
   await set(schoolRef, {
     name,
     address: address || '',
-    joinCode: generateJoinCode(),
-    active: true,
     createdAt: serverTimestamp()
   });
   return schoolRef.key;
-}
-
-export async function updateSchool(schoolId, fields) {
-  await update(ref(db, `schools/${schoolId}`), fields);
-}
-
-/** Invalidates the old invite link and issues a new join code for a school. */
-export async function regenerateJoinCode(schoolId) {
-  const joinCode = generateJoinCode();
-  await update(ref(db, `schools/${schoolId}`), { joinCode });
-  return joinCode;
-}
-
-/** Soft-disable a school: existing data stays, but its invite link stops working. */
-export async function setSchoolActive(schoolId, active) {
-  await update(ref(db, `schools/${schoolId}`), { active });
 }
 
 export async function deleteSchool(schoolId) {
@@ -165,13 +129,4 @@ export async function deleteSchool(schoolId) {
 /** Promotes an existing account to librarian/admin for a given school. */
 export async function assignSchoolAdmin(uid, schoolId) {
   await update(ref(db, `users/${uid}`), { role: ROLES.LIBRARIAN, schoolId });
-}
-
-/** Apply the same status (active/archived) to many accounts in one write. */
-export async function bulkSetUserStatus(uids, status) {
-  const updates = {};
-  uids.forEach((uid) => {
-    updates[`users/${uid}/status`] = status;
-  });
-  await update(ref(db), updates);
 }

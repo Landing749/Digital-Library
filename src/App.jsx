@@ -27,7 +27,6 @@ import Circulation from './pages/librarian/Circulation';
 import OverdueTracking from './pages/librarian/OverdueTracking';
 import Reports from './pages/librarian/Reports';
 import Announcements from './pages/librarian/Announcements';
-import Invite from './pages/librarian/Invite';
 
 import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
 import ManageSchools from './pages/superadmin/ManageSchools';
@@ -71,7 +70,6 @@ export default function App() {
       <Route path="/librarian/overdue" element={<ProtectedRoute requiredRole={ROLES.LIBRARIAN}><OverdueTracking /></ProtectedRoute>} />
       <Route path="/librarian/reports" element={<ProtectedRoute requiredRole={ROLES.LIBRARIAN}><Reports /></ProtectedRoute>} />
       <Route path="/librarian/announcements" element={<ProtectedRoute requiredRole={ROLES.LIBRARIAN}><Announcements /></ProtectedRoute>} />
-      <Route path="/librarian/invite" element={<ProtectedRoute requiredRole={ROLES.LIBRARIAN}><Invite /></ProtectedRoute>} />
 
       {/* Super Admin */}
       <Route path="/superadmin" element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN}><SuperAdminDashboard /></ProtectedRoute>} />

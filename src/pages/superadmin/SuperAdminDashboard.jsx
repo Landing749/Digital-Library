@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
 import { useCollection } from '../../hooks/useCollection';
 import { ROLES } from '../../utils/roles';
 import AppShell from '../../components/AppShell';
@@ -14,11 +13,6 @@ export default function SuperAdminDashboard() {
     librarian: users.filter((u) => u.role === ROLES.LIBRARIAN).length
   };
 
-  const activeSchools = schools.filter((s) => s.active !== false);
-  const schoolsWithoutAdmin = activeSchools.filter(
-    (s) => !users.some((u) => u.role === ROLES.LIBRARIAN && u.schoolId === s.id)
-  );
-
   return (
     <AppShell>
       <h1 className="font-display text-3xl">Platform Overview</h1>
@@ -31,31 +25,10 @@ export default function SuperAdminDashboard() {
         <Stat label="Librarians / Admins" value={counts.librarian} to="/superadmin/admins" />
       </div>
 
-      {schoolsWithoutAdmin.length > 0 && (
-        <div className="catalog-card p-5 mt-6 border-l-4 border-l-overdue-500">
-          <div className="flex items-center gap-2">
-            <AlertTriangle size={16} className="text-overdue-600 shrink-0" />
-            <p className="font-display text-lg">Schools without an admin</p>
-          </div>
-          <p className="text-sm text-ink-500 mt-1">
-            These schools have no librarian/admin assigned yet — nobody can approve resources, run
-            circulation, or manage accounts for them until you assign one.
-          </p>
-          <ul className="mt-3 space-y-1.5">
-            {schoolsWithoutAdmin.map((s) => (
-              <li key={s.id} className="flex items-center justify-between text-sm">
-                <span>{s.name}</span>
-                <Link to="/superadmin/admins" className="text-stacks-700 font-medium hover:underline text-xs">Assign admin →</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       <div className="grid sm:grid-cols-2 gap-4 mt-6">
         <Link to="/superadmin/schools" className="catalog-card p-5 hover:shadow-md transition-shadow">
           <p className="font-display text-xl">Manage schools →</p>
-          <p className="text-sm text-ink-500 mt-1">Add school sites and share their invite links.</p>
+          <p className="text-sm text-ink-500 mt-1">Add new school sites onto the platform.</p>
         </Link>
         <Link to="/superadmin/admins" className="catalog-card p-5 hover:shadow-md transition-shadow">
           <p className="font-display text-xl">Assign school admins →</p>

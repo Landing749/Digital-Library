@@ -9,17 +9,15 @@ export default function AssignAdmins() {
   const { data: users } = useCollection('users');
   const { data: schools } = useCollection('schools');
   const [q, setQ] = useState('');
-  const [schoolFilter, setSchoolFilter] = useState('all');
   const [schoolChoice, setSchoolChoice] = useState({});
   const [busyId, setBusyId] = useState(null);
 
   const candidates = useMemo(() => {
     return users
       .filter((u) => u.role !== ROLES.SUPERADMIN)
-      .filter((u) => schoolFilter === 'all' || u.schoolId === schoolFilter)
       .filter((u) => !q.trim() || `${u.name} ${u.email}`.toLowerCase().includes(q.trim().toLowerCase()))
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  }, [users, q, schoolFilter]);
+  }, [users, q]);
 
   function schoolName(schoolId) {
     return schools.find((s) => s.id === schoolId)?.name;
@@ -62,20 +60,12 @@ export default function AssignAdmins() {
         </p>
       )}
 
-      <div className="flex flex-wrap gap-3 mt-6">
-        <input
-          className="input flex-1 min-w-[200px] max-w-sm"
-          placeholder="Search name or email…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <select className="input w-52" value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)}>
-          <option value="all">All schools</option>
-          {schools.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
-      </div>
+      <input
+        className="input max-w-sm mt-6"
+        placeholder="Search name or email…"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+      />
 
       <div className="catalog-card divide-y divide-ink-900/10 mt-4">
         {candidates.map((u) => (

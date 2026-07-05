@@ -1,48 +1,26 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Library, GraduationCap, BookMarked, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Library, GraduationCap, BookMarked, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useCollection } from '../hooks/useCollection';
 import { ROLES } from '../utils/roles';
 
 export default function Register() {
   const { registerWithEmail } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const inviteCode = (searchParams.get('school') || '').trim().toUpperCase();
-
-  const { data: schools, loading: schoolsLoading } = useCollection('schools');
-  const activeSchools = useMemo(() => schools.filter((s) => s.active !== false), [schools]);
-  const invitedSchool = useMemo(
-    () => (inviteCode ? activeSchools.find((s) => (s.joinCode || '').toUpperCase() === inviteCode) : null),
-    [activeSchools, inviteCode]
-  );
-
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: ROLES.STUDENT, schoolId: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: ROLES.STUDENT });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-
-  // Once the invited school resolves (or we know there's no match), lock it in.
-  useEffect(() => {
-    if (invitedSchool) set('schoolId', invitedSchool.id);
-  }, [invitedSchool?.id]);
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
-
-  const needsSchoolPicker = !schoolsLoading && !invitedSchool && activeSchools.length > 0;
-  const invalidInvite = !schoolsLoading && inviteCode && !invitedSchool;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     if (form.password.length < 6) {
       setError('Password must be at least 6 characters.');
-      return;
-    }
-    if (needsSchoolPicker && !form.schoolId) {
-      setError('Please choose your school.');
       return;
     }
     setBusy(true);
@@ -61,7 +39,12 @@ export default function Register() {
       <BrandPanel />
 
       <div className="flex-1 flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="w-full max-w-sm"
+        >
           <div className="text-center mb-8 lg:hidden">
             <div className="inline-grid place-items-center w-12 h-12 rounded-xl bg-gradient-to-br from-brass-500 to-stacks-600 text-parchment-50 shadow-md mb-3">
               <Library size={22} strokeWidth={2.25} />
@@ -76,22 +59,6 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="catalog-card p-6 space-y-4">
-            {invitedSchool && (
-              <div className="flex items-center gap-2 rounded-lg bg-brass-500/10 border border-brass-500/30 px-3 py-2.5">
-                <CheckCircle2 size={16} className="text-brass-600 shrink-0" />
-                <p className="text-sm text-ink-700">
-                  Joining <span className="font-medium">{invitedSchool.name}</span>
-                </p>
-              </div>
-            )}
-            {invalidInvite && (
-              <div className="flex items-start gap-2 rounded-lg bg-overdue-500/10 border border-overdue-500/30 px-3 py-2.5">
-                <AlertTriangle size={16} className="text-overdue-600 shrink-0 mt-0.5" />
-                <p className="text-sm text-ink-700">
-                  That invite link is invalid or no longer active. Choose your school below, or ask your librarian for a new link.
-                </p>
-              </div>
-            )}
             <div>
               <label className="label">Full name</label>
               <input className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
@@ -104,37 +71,62 @@ export default function Register() {
               <label className="label">Password</label>
               <input className="input" type="password" required value={form.password} onChange={(e) => set('password', e.target.value)} />
             </div>
-            {needsSchoolPicker && (
-              <div>
-                <label className="label">School</label>
-                <select className="input" required value={form.schoolId} onChange={(e) => set('schoolId', e.target.value)}>
-                  <option value="">Choose your school…</option>
-                  {activeSchools.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
             <div>
               <label className="label">I am a</label>
-              <select className="input" value={form.role} onChange={(e) => set('role', e.target.value)}>
-                <option value={ROLES.STUDENT}>Student</option>
-                <option value={ROLES.TEACHER}>Teacher</option>
-              </select>
-              <p className="text-[11px] text-ink-500 mt-1">
+              <RoleToggle value={form.role} onChange={(v) => set('role', v)} />
+              <p className="text-[11px] text-ink-500 mt-1.5">
                 Librarian/admin and super admin accounts are created by an existing admin.
               </p>
             </div>
-            {error && <p className="text-sm text-overdue-600">{error}</p>}
-            <button className="btn-primary w-full" disabled={busy} type="submit">
-              {busy ? 'Creating account…' : 'Create account'}
-            </button>
+            {error && (
+              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-sm text-overdue-600">
+                {error}
+              </motion.p>
+            )}
+            <motion.button whileTap={{ scale: 0.97 }} className="btn-primary w-full group" disabled={busy} type="submit">
+              {busy ? (
+                <><Loader2 size={16} className="animate-spin" /> Creating account…</>
+              ) : (
+                <>Create account <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" /></>
+              )}
+            </motion.button>
             <p className="text-center text-sm text-ink-500">
               Already have an account? <Link to="/login" className="text-stacks-700 font-medium hover:underline">Sign in</Link>
             </p>
           </form>
-        </div>
+        </motion.div>
       </div>
+    </div>
+  );
+}
+
+function RoleToggle({ value, onChange }) {
+  const options = [
+    { value: ROLES.STUDENT, label: 'Student', icon: GraduationCap },
+    { value: ROLES.TEACHER, label: 'Teacher', icon: BookMarked }
+  ];
+  return (
+    <div className="tab-pill-track">
+      {options.map(({ value: v, label, icon: Icon }) => {
+        const active = value === v;
+        return (
+          <button
+            key={v}
+            type="button"
+            onClick={() => onChange(v)}
+            className={`tab-pill-btn flex-1 flex items-center justify-center gap-1.5 ${active ? 'text-white' : 'text-ink-700'}`}
+          >
+            {active && (
+              <motion.span
+                layoutId="role-pill"
+                className="absolute inset-0 bg-stacks-700 rounded-md -z-10"
+                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+              />
+            )}
+            <Icon size={14} strokeWidth={2} /> {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -144,10 +136,24 @@ function BrandPanel() {
     <div className="hidden lg:flex w-[42%] shrink-0 relative flex-col justify-between overflow-hidden
                      bg-gradient-to-br from-stacks-800 via-stacks-700 to-stacks-800 text-parchment-50 p-12">
       <div className="absolute inset-0 bg-card-lines opacity-10 pointer-events-none" />
-      <div className="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-brass-500/10 blur-3xl" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1 }}
+        className="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-brass-500/10 blur-3xl"
+      />
       <div className="absolute -left-16 bottom-0 w-64 h-64 rounded-full bg-parchment-50/5 blur-3xl" />
 
-      <div className="relative flex items-center gap-3">
+      <GraduationCap size={22} strokeWidth={1.5} className="absolute top-28 right-14 text-parchment-50/10 float-slow" />
+      <Sparkles size={18} strokeWidth={1.5} className="absolute bottom-44 right-24 text-parchment-50/10 float-slow-delay" />
+      <BookMarked size={20} strokeWidth={1.5} className="absolute top-1/2 right-8 text-parchment-50/10 float-slow-delay-2" />
+
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative flex items-center gap-3"
+      >
         <span className="grid place-items-center w-11 h-11 rounded-xl bg-gradient-to-br from-brass-500 to-stacks-500 shadow-lg shrink-0">
           <Library size={22} strokeWidth={2.25} />
         </span>
@@ -155,16 +161,21 @@ function BrandPanel() {
           <p className="font-display text-2xl">Digital Library</p>
           <p className="font-mono text-[11px] uppercase tracking-widest text-parchment-100/60">School Library System</p>
         </div>
-      </div>
+      </motion.div>
 
       <div className="relative space-y-6">
-        <p className="font-display text-4xl leading-tight max-w-sm">
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="font-display text-4xl leading-tight max-w-sm"
+        >
           One account, every shelf.
-        </p>
+        </motion.p>
         <div className="space-y-3.5 text-sm text-parchment-100/85">
-          <Feature icon={GraduationCap} text="Students & teachers get instant access to the catalog and resources." />
-          <Feature icon={BookMarked} text="Bookmark titles, track reading history, and manage borrowed books." />
-          <Feature icon={Sparkles} text="Teachers can upload notes, reviewers, and presentations for approval." />
+          <Feature icon={GraduationCap} text="Students & teachers get instant access to the catalog and resources." delay={0.2} />
+          <Feature icon={BookMarked} text="Bookmark titles, track reading history, and manage borrowed books." delay={0.28} />
+          <Feature icon={Sparkles} text="Teachers can upload notes, reviewers, and presentations for approval." delay={0.36} />
         </div>
       </div>
 
@@ -175,13 +186,18 @@ function BrandPanel() {
   );
 }
 
-function Feature({ icon: Icon, text }) {
+function Feature({ icon: Icon, text, delay = 0 }) {
   return (
-    <div className="flex items-start gap-3">
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="flex items-start gap-3"
+    >
       <span className="grid place-items-center w-7 h-7 rounded-md bg-parchment-50/10 shrink-0 mt-0.5">
         <Icon size={15} strokeWidth={2} />
       </span>
       <p className="leading-snug">{text}</p>
-    </div>
+    </motion.div>
   );
 }

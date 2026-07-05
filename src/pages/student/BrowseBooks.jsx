@@ -1,8 +1,12 @@
 import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, BookMarked, GraduationCap, SearchX, Tags } from 'lucide-react';
 import { useCollection } from '../../hooks/useCollection';
 import { searchBooks, filterByCategory } from '../../utils/search';
-import BookCard from '../../components/BookCard';
+import BookCard, { BookCardSkeleton } from '../../components/BookCard';
 import AppShell from '../../components/AppShell';
+import PageTransition from '../../components/PageTransition';
+import EmptyState from '../../components/EmptyState';
 
 export default function BrowseBooks() {
   const { data: books, loading: loadingBooks } = useCollection('books');
@@ -23,35 +27,68 @@ export default function BrowseBooks() {
 
   return (
     <AppShell>
-      <h1 className="font-display text-3xl">Browse &amp; Search</h1>
-      <p className="text-ink-500 text-sm mt-1">Search by title, author, subject, ISBN, or keyword.</p>
+      <PageTransition>
+        <h1 className="font-display text-3xl">Browse &amp; Search</h1>
+        <p className="text-ink-500 text-sm mt-1">Search by title, author, subject, ISBN, or keyword.</p>
 
-      <div className="flex flex-wrap gap-3 mt-6">
-        <div className="flex bg-parchment-100 rounded-sm p-1 border border-ink-900/10">
-          <button onClick={() => setTab('books')} className={`px-3 py-1.5 text-sm rounded-sm ${tab === 'books' ? 'bg-stacks-700 text-white' : 'text-ink-700'}`}>Library Books</button>
-          <button onClick={() => setTab('resources')} className={`px-3 py-1.5 text-sm rounded-sm ${tab === 'resources' ? 'bg-stacks-700 text-white' : 'text-ink-700'}`}>Teacher Resources</button>
+        <div className="flex flex-wrap gap-3 mt-6">
+          <div className="tab-pill-track">
+            {[
+              { key: 'books', label: 'Library Books', icon: BookMarked },
+              { key: 'resources', label: 'Teacher Resources', icon: GraduationCap }
+            ].map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`tab-pill-btn flex items-center gap-1.5 ${tab === key ? 'text-white' : 'text-ink-700'}`}
+              >
+                {tab === key && (
+                  <motion.span
+                    layoutId="browse-tab-pill"
+                    className="absolute inset-0 bg-stacks-700 rounded-md -z-10"
+                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                  />
+                )}
+                <Icon size={14} strokeWidth={2} /> {label}
+              </button>
+            ))}
+          </div>
+          <div className="relative flex-1 min-w-[200px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500/60" />
+            <input
+              className="input pl-9"
+              placeholder="Search title, author, ISBN, subject…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
+          <div className="relative w-48">
+            <Tags size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500/60 pointer-events-none" />
+            <select className="input pl-8 appearance-none" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="all">All categories</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
         </div>
-        <input
-          className="input flex-1 min-w-[200px]"
-          placeholder="Search title, author, ISBN, subject…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <select className="input w-48" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-          <option value="all">All categories</option>
-          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-      </div>
 
-      {loadingBooks ? (
-        <p className="text-ink-500 font-mono text-sm mt-8">Pulling the catalog drawer…</p>
-      ) : filtered.length === 0 ? (
-        <p className="text-ink-500 text-sm mt-8">Nothing matches that search yet.</p>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-6">
-          {filtered.map((b) => <BookCard key={b.id} book={b} />)}
-        </div>
-      )}
+        {loadingBooks ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-6">
+            {Array.from({ length: 10 }).map((_, i) => <BookCardSkeleton key={i} />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={SearchX}
+            title="Nothing matches that search"
+            hint="Try a different keyword, or clear the category filter."
+          />
+        ) : (
+          <AnimatePresence mode="popLayout">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-6">
+              {filtered.map((b, i) => <BookCard key={b.id} book={b} index={i} />)}
+            </div>
+          </AnimatePresence>
+        )}
+      </PageTransition>
     </AppShell>
   );
 }
