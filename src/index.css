@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-parchment-50 text-ink-900 font-sans antialiased;
+}
+
+/* Signature element: a rubber-stamp style status badge, used for borrow
+   status, overdue flags, and resource-approval status. Rotated slightly
+   and set in mono type, like a librarian's date stamp on a due-date slip. */
+.stamp {
+  @apply inline-flex items-center gap-1.5 font-mono text-[11px] tracking-wide uppercase
+         px-2.5 py-1 rounded-sm border-2 -rotate-2 select-none;
+}
+.stamp-available { @apply stamp border-stacks-700 text-stacks-700; }
+.stamp-borrowed { @apply stamp border-brass-600 text-brass-600; }
+.stamp-overdue { @apply stamp border-overdue-600 text-overdue-600 rotate-2; }
+.stamp-pending { @apply stamp border-ink-500 text-ink-500; }
+.stamp-approved { @apply stamp border-stacks-700 text-stacks-700; }
+.stamp-rejected { @apply stamp border-overdue-600 text-overdue-600; }
+
+/* Signature element: catalog card — index-card styling with ruled lines,
+   used for book/resource detail views, echoing physical library catalog cards. */
+.catalog-card {
+  @apply bg-parchment-50 border border-ink-900/15 rounded-sm shadow-sm bg-card-lines;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-sm px-4 py-2 text-sm font-medium
+         transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-primary { @apply btn bg-stacks-700 text-parchment-50 hover:bg-stacks-800; }
+.btn-secondary { @apply btn bg-parchment-100 text-ink-900 border border-ink-900/15 hover:bg-parchment-200; }
+.btn-danger { @apply btn bg-overdue-500 text-parchment-50 hover:bg-overdue-600; }
+.btn-ghost { @apply btn text-ink-700 hover:bg-parchment-100; }
+
+.input {
+  @apply w-full rounded-sm border border-ink-900/20 bg-parchment-50 px-3 py-2 text-sm
+         placeholder:text-ink-500/60 focus:outline-none focus:ring-2 focus:ring-stacks-400 focus:border-stacks-400;
+}
+
+.label {
+  @apply block text-xs font-mono uppercase tracking-wide text-ink-500 mb-1;
+}
+
+.spine-link {
+  @apply block px-3 py-2 rounded-sm text-sm font-medium text-parchment-100/85 hover:bg-stacks-600/60 hover:text-white transition-colors;
+}
+.spine-link.active {
+  @apply bg-parchment-50 text-stacks-800 hover:bg-parchment-50 hover:text-stacks-800;
+}
