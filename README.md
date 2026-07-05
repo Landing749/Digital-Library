@@ -1,4 +1,4 @@
-# Athenaeum — School Digital Library Management System
+# Digital Library — School Library Management System
 
 A React + Firebase Realtime Database app for managing a school's digital
 learning resources and physical library catalog, with role-based access for
