@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Megaphone } from 'lucide-react';
 import { db } from '../firebase';
 import { formatDate } from '../utils/dateUtils';
 
@@ -21,28 +19,17 @@ export default function AnnouncementBanner() {
 
   return (
     <div className="space-y-2 mb-6">
-      <AnimatePresence>
-        {announcements.map((a, i) => (
-          <motion.div
-            key={a.id}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.06 }}
-            className="catalog-card px-4 py-3 border-l-4 border-l-brass-500 flex gap-3"
-          >
-            <span className="icon-badge w-8 h-8 bg-brass-500/10 text-brass-600 mt-0.5 shrink-0">
-              <Megaphone size={15} strokeWidth={2.25} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-display text-base truncate">{a.title}</p>
-                <span className="font-mono text-[11px] text-ink-500 shrink-0">{formatDate(a.createdAt)}</span>
-              </div>
-              <p className="text-sm text-ink-700 mt-1">{a.body}</p>
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      {announcements.map((a) => (
+        <div key={a.id} className="catalog-card px-4 py-3 border-l-4 border-l-brass-500">
+          <div className="flex items-center justify-between">
+            <p className="font-display text-base">
+              {a.title} {a.scope === 'platform' && <span className="stamp-approved ml-1 align-middle">Platform</span>}
+            </p>
+            <span className="font-mono text-[11px] text-ink-500">{formatDate(a.createdAt)}</span>
+          </div>
+          <p className="text-sm text-ink-700 mt-1">{a.body}</p>
+        </div>
+      ))}
     </div>
   );
 }

@@ -29,9 +29,9 @@ export default function ManageSchools() {
     }
   }
 
-  async function handleDelete(id) {
+  async function handleDelete(id, name) {
     if (!confirm('Remove this school from the platform? Its users, books, and records are kept as-is.')) return;
-    await deleteSchool(id);
+    await deleteSchool(id, name);
   }
 
   function adminCount(schoolId) {
@@ -72,7 +72,7 @@ export default function ManageSchools() {
             </div>
             <button
               className="btn-ghost text-xs text-overdue-600 shrink-0"
-              onClick={() => handleDelete(s.id)}
+              onClick={() => handleDelete(s.id, s.name)}
             >
               Remove
             </button>

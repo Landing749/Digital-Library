@@ -9,9 +9,9 @@ import { getDatabase } from 'firebase/database';
 const firebaseConfig = {
   apiKey: 'AIzaSyAVySINCJsR-L1vvJYlF6F5sGI3aHE1lhc',
   authDomain: 'dig-library-2f6f0.firebaseapp.com',
-  // ⚠️ Fill this in from Firebase Console → Realtime Database → the URL shown
-  // at the top of the data viewer. It depends on which region you created the
-  // database in, e.g.:
+  // ⚠️ This must match the region you created the Realtime Database in
+  // (Firebase Console → Realtime Database → the URL shown at the top of the
+  // data viewer). Currently set to the US region:
   //   https://dig-library-2f6f0-default-rtdb.firebaseio.com          (US)
   //   https://dig-library-2f6f0-default-rtdb.asia-southeast1.firebasedatabase.app (Singapore)
   databaseURL: 'https://dig-library-2f6f0-default-rtdb.firebaseio.com',

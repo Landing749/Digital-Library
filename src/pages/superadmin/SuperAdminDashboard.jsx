@@ -26,13 +26,21 @@ export default function SuperAdminDashboard() {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4 mt-6">
-        <Link to="/superadmin/schools" className="catalog-card p-5 hover:shadow-md transition-shadow">
+        <Link to="/superadmin/schools" className="catalog-card p-5">
           <p className="font-display text-xl">Manage schools →</p>
           <p className="text-sm text-ink-500 mt-1">Add new school sites onto the platform.</p>
         </Link>
-        <Link to="/superadmin/admins" className="catalog-card p-5 hover:shadow-md transition-shadow">
+        <Link to="/superadmin/admins" className="catalog-card p-5">
           <p className="font-display text-xl">Assign school admins →</p>
           <p className="text-sm text-ink-500 mt-1">Grant librarian/admin access from the user list.</p>
+        </Link>
+        <Link to="/superadmin/announcements" className="catalog-card p-5">
+          <p className="font-display text-xl">Broadcast an announcement →</p>
+          <p className="text-sm text-ink-500 mt-1">Post a notice to every dashboard, platform-wide.</p>
+        </Link>
+        <Link to="/superadmin/audit-log" className="catalog-card p-5">
+          <p className="font-display text-xl">Review the audit log →</p>
+          <p className="text-sm text-ink-500 mt-1">See recent admin actions across every school.</p>
         </Link>
       </div>
     </AppShell>
@@ -41,7 +49,7 @@ export default function SuperAdminDashboard() {
 
 function Stat({ label, value, to }) {
   const inner = (
-    <div className="catalog-card p-5 hover:shadow-md transition-shadow h-full">
+    <div className="catalog-card p-5 h-full">
       <p className="font-mono text-xs uppercase tracking-wide text-ink-500">{label}</p>
       <p className="font-display text-4xl mt-1">{value}</p>
     </div>

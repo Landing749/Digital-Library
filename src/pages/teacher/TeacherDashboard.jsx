@@ -10,6 +10,8 @@ export default function TeacherDashboard() {
   const mine = resources.filter((r) => r.uploaderUid === profile.uid);
   const pending = mine.filter((r) => r.status === 'pending');
   const approved = mine.filter((r) => r.status === 'approved');
+  const totalViews = mine.reduce((sum, r) => sum + (r.views || 0), 0);
+  const totalDownloads = mine.reduce((sum, r) => sum + (r.downloads || 0), 0);
 
   return (
     <AppShell>
@@ -24,14 +26,19 @@ export default function TeacherDashboard() {
         <Stat label="Published" value={approved.length} />
       </div>
 
+      <div className="grid sm:grid-cols-2 gap-4 mt-4">
+        <Stat label="Total views" value={totalViews} />
+        <Stat label="Total downloads" value={totalDownloads} />
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-4 mt-6">
-        <Link to="/teacher/upload" className="catalog-card p-5 hover:shadow-md transition-shadow">
+        <Link to="/teacher/upload" className="catalog-card p-5">
           <p className="font-display text-xl">Upload a resource →</p>
           <p className="text-sm text-ink-500 mt-1">PDFs, notes, presentations, reviewers, e-books.</p>
         </Link>
-        <Link to="/teacher/manage" className="catalog-card p-5 hover:shadow-md transition-shadow">
+        <Link to="/teacher/manage" className="catalog-card p-5">
           <p className="font-display text-xl">Manage my resources →</p>
-          <p className="text-sm text-ink-500 mt-1">Edit details or remove uploads.</p>
+          <p className="text-sm text-ink-500 mt-1">Edit details, view analytics, or remove uploads.</p>
         </Link>
       </div>
     </AppShell>

@@ -4,6 +4,18 @@ A React + Firebase Realtime Database app for managing a school's digital
 learning resources and physical library catalog, with role-based access for
 Students, Teachers, Librarians/Admins, and a platform-level Super Admin.
 
+## New in this update
+
+- **Ratings & reviews** — students can rate and review both books and resources (`BookDetail` / `ResourceDetail`).
+- **Book holds / waitlist** — when every copy of a physical book is checked out, students can join a waitlist and see their place in line (`My Holds`).
+- **Resource analytics** — view and download counts on every teacher upload, shown in `My Resources` and aggregated on the Teacher dashboard.
+- **Resource editing** — teachers can edit an uploaded resource's metadata without needing re-approval (status is untouched by an edit).
+- **Platform announcements** — super admin can broadcast a notice to every school's dashboard, in addition to a librarian's per-school announcements.
+- **Audit log** — school creation, admin assignment, role/status changes, resource approvals, and book archiving are all recorded for the super admin to review.
+- **Global category templates** — super admin curates a shared list of subject categories; librarians can import any of them into their own catalog in one click.
+
+⚠️ **If you deployed `database.rules.json` before this update, redeploy it** — it now includes a `globalCategories` node. Existing `reviews`, `holds`, and `auditLog` rules were already present but are now used by the app.
+
 ## Tech stack
 
 - **React 18 + Vite** — UI and build tooling
@@ -39,12 +51,15 @@ src/
     BookCard.jsx / BookQRLabel.jsx / QRScanner.jsx
   pages/
     Login.jsx, Register.jsx, BookDetail.jsx, ResourceDetail.jsx
-    student/    Dashboard, Browse & Search, Bookmarks, Reading History, My Borrowing
-    teacher/    Dashboard, Upload Resource, Manage Resources
-    librarian/  Dashboard, Manage Books, Categories, Approve Resources,
-                Manage Accounts, Circulation & Scan, Overdue Tracking,
-                Reports, Announcements
-    superadmin/ Dashboard, Manage Schools, Assign Admins, Platform Reports
+    student/    Dashboard, Browse & Search, Bookmarks, Reading History,
+                My Borrowing, My Holds
+    teacher/    Dashboard, Upload Resource, Manage Resources (with
+                analytics + inline edit)
+    librarian/  Dashboard, Manage Books, Categories (with platform-template
+                import), Approve Resources, Manage Accounts, Circulation &
+                Scan, Overdue Tracking, Reports, Announcements
+    superadmin/ Dashboard, Manage Schools, Assign Admins, Platform Reports,
+                Platform Announcements, Audit Log, Global Category Templates
 database.rules.json   Firebase Realtime Database security rules
 ```
 
@@ -132,12 +147,17 @@ books/{id}             { title, author, isbn, subject, categoryId, type,
 resources/{id}         { title, subject, categoryId, materialType,
                           description, fileUrl, fileFormat, uploaderUid,
                           uploaderName, status: pending|approved|rejected,
-                          createdAt }
+                          views?, downloads?, createdAt }
 borrowRecords/{id}     { bookId, bookTitle, userId, borrowedAt, dueAt,
                           returnedAt }
 bookmarks/{uid}/{id}   { createdAt }   — id is a bookId, or "res-<resourceId>"
 readingHistory/{uid}/{id} { title, lastReadAt, isResource? }
-announcements/{id}     { title, body, createdAt }
+reviews/{itemId}/{uid} { rating, userName, comment, createdAt } — itemId is a
+                          bookId, or "res-<resourceId>"
+holds/{holdId}         { uid, userName, bookId, bookTitle, status, createdAt }
+globalCategories/{id}  { name, createdAt } — super admin category templates
+auditLog/{id}          { action, actorUid, actorName, details, createdAt }
+announcements/{id}     { title, body, scope?: "platform", createdAt }
 ```
 
 ## Roles

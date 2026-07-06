@@ -1,7 +1,30 @@
 import { ref, push, set, update, get, remove, runTransaction, serverTimestamp } from 'firebase/database';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { addDays, DEFAULT_LOAN_DAYS } from './dateUtils';
 import { ROLES } from './roles';
+
+/* ---------------------------------------------------------------------- */
+/* Audit trail (super admin & librarian actions)                          */
+/* ---------------------------------------------------------------------- */
+
+// Fire-and-forget: audit logging should never block or fail the action it's
+// recording, so errors are swallowed (and logged to the console) rather than
+// thrown back to the caller.
+async function logAudit(action, details = {}) {
+  try {
+    const user = auth.currentUser;
+    const entryRef = push(ref(db, 'auditLog'));
+    await set(entryRef, {
+      action,
+      actorUid: user?.uid || null,
+      actorName: user?.displayName || user?.email || 'Unknown',
+      details,
+      createdAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.error('logAudit failed:', err);
+  }
+}
 
 /* ---------------------------------------------------------------------- */
 /* Books & categories                                                      */
@@ -9,6 +32,7 @@ import { ROLES } from './roles';
 
 export async function archiveBook(bookId, archived) {
   await update(ref(db, `books/${bookId}`), { archived });
+  await logAudit(archived ? 'book.archived' : 'book.unarchived', { bookId });
 }
 
 /* ---------------------------------------------------------------------- */
@@ -29,6 +53,45 @@ export async function logReadingHistory(uid, itemId, extra = {}) {
     ...extra,
     lastReadAt: serverTimestamp()
   });
+}
+
+/* ---------------------------------------------------------------------- */
+/* Ratings & reviews (shared by books and resources — resource ids are    */
+/* namespaced "res-<id>", the same convention bookmarks already use)      */
+/* ---------------------------------------------------------------------- */
+
+export async function submitReview(itemId, uid, { rating, userName, comment }) {
+  await set(ref(db, `reviews/${itemId}/${uid}`), {
+    rating,
+    userName,
+    comment: comment || '',
+    createdAt: serverTimestamp()
+  });
+}
+
+export async function removeReview(itemId, uid) {
+  await remove(ref(db, `reviews/${itemId}/${uid}`));
+}
+
+/* ---------------------------------------------------------------------- */
+/* Holds (waitlist for a physical book that's fully checked out)          */
+/* ---------------------------------------------------------------------- */
+
+export async function placeHold(book, uid, userName) {
+  if (!book?.id) throw new Error('Invalid book.');
+  const holdRef = push(ref(db, 'holds'));
+  await set(holdRef, {
+    uid,
+    userName,
+    bookId: book.id,
+    bookTitle: book.title,
+    status: 'waiting',
+    createdAt: serverTimestamp()
+  });
+}
+
+export async function cancelHold(holdId) {
+  await remove(ref(db, `holds/${holdId}`));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -94,6 +157,13 @@ export async function returnBook(recordId, bookId) {
 
 export async function setResourceStatus(resourceId, status) {
   await update(ref(db, `resources/${resourceId}`), { status });
+  await logAudit(`resource.${status}`, { resourceId });
+}
+
+/** Fire-and-forget engagement counters shown to teachers on their uploads. */
+export async function incrementResourceStat(resourceId, stat) {
+  if (stat !== 'views' && stat !== 'downloads') return;
+  await runTransaction(ref(db, `resources/${resourceId}/${stat}`), (current) => (current || 0) + 1);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -102,10 +172,12 @@ export async function setResourceStatus(resourceId, status) {
 
 export async function setUserRole(uid, role) {
   await update(ref(db, `users/${uid}`), { role });
+  await logAudit('user.role_changed', { uid, role });
 }
 
 export async function setUserStatus(uid, status) {
   await update(ref(db, `users/${uid}`), { status });
+  await logAudit(status === 'archived' ? 'user.deactivated' : 'user.reactivated', { uid });
 }
 
 /* ---------------------------------------------------------------------- */
@@ -119,14 +191,36 @@ export async function createSchool({ name, address }) {
     address: address || '',
     createdAt: serverTimestamp()
   });
+  await logAudit('school.created', { schoolId: schoolRef.key, name });
   return schoolRef.key;
 }
 
-export async function deleteSchool(schoolId) {
+export async function deleteSchool(schoolId, name) {
   await remove(ref(db, `schools/${schoolId}`));
+  await logAudit('school.removed', { schoolId, name: name || null });
 }
 
 /** Promotes an existing account to librarian/admin for a given school. */
-export async function assignSchoolAdmin(uid, schoolId) {
+export async function assignSchoolAdmin(uid, schoolId, userName, schoolName) {
   await update(ref(db, `users/${uid}`), { role: ROLES.LIBRARIAN, schoolId });
+  await logAudit('admin.assigned', { uid, userName: userName || null, schoolId, schoolName: schoolName || null });
+}
+
+/* ---------------------------------------------------------------------- */
+/* Super admin: platform-wide category templates                         */
+/* ---------------------------------------------------------------------- */
+
+export async function createGlobalCategory(name) {
+  const catRef = push(ref(db, 'globalCategories'));
+  await set(catRef, { name, createdAt: serverTimestamp() });
+}
+
+export async function deleteGlobalCategory(id) {
+  await remove(ref(db, `globalCategories/${id}`));
+}
+
+/** Librarian one-click import of a platform template into their own catalog. */
+export async function importGlobalCategory(name) {
+  const catRef = push(ref(db, 'categories'));
+  await set(catRef, { name, createdAt: serverTimestamp() });
 }

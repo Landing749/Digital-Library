@@ -13,6 +13,7 @@ import BrowseBooks from './pages/student/BrowseBooks';
 import Bookmarks from './pages/student/Bookmarks';
 import ReadingHistory from './pages/student/ReadingHistory';
 import MyBorrowing from './pages/student/MyBorrowing';
+import MyHolds from './pages/student/MyHolds';
 
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import UploadResource from './pages/teacher/UploadResource';
@@ -32,6 +33,9 @@ import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
 import ManageSchools from './pages/superadmin/ManageSchools';
 import AssignAdmins from './pages/superadmin/AssignAdmins';
 import PlatformReports from './pages/superadmin/PlatformReports';
+import PlatformAnnouncements from './pages/superadmin/Announcements';
+import AuditLog from './pages/superadmin/AuditLog';
+import GlobalCategories from './pages/superadmin/GlobalCategories';
 
 export default function App() {
   const { firebaseUser, role, loading } = useAuth();
@@ -54,6 +58,7 @@ export default function App() {
       <Route path="/student/bookmarks" element={<ProtectedRoute requiredRole={ROLES.STUDENT}><Bookmarks /></ProtectedRoute>} />
       <Route path="/student/history" element={<ProtectedRoute requiredRole={ROLES.STUDENT}><ReadingHistory /></ProtectedRoute>} />
       <Route path="/student/borrowing" element={<ProtectedRoute requiredRole={ROLES.STUDENT}><MyBorrowing /></ProtectedRoute>} />
+      <Route path="/student/holds" element={<ProtectedRoute requiredRole={ROLES.STUDENT}><MyHolds /></ProtectedRoute>} />
 
       {/* Teacher */}
       <Route path="/teacher" element={<ProtectedRoute requiredRole={ROLES.TEACHER}><TeacherDashboard /></ProtectedRoute>} />
@@ -76,6 +81,9 @@ export default function App() {
       <Route path="/superadmin/schools" element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN}><ManageSchools /></ProtectedRoute>} />
       <Route path="/superadmin/admins" element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN}><AssignAdmins /></ProtectedRoute>} />
       <Route path="/superadmin/reports" element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN}><PlatformReports /></ProtectedRoute>} />
+      <Route path="/superadmin/announcements" element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN}><PlatformAnnouncements /></ProtectedRoute>} />
+      <Route path="/superadmin/audit-log" element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN}><AuditLog /></ProtectedRoute>} />
+      <Route path="/superadmin/global-categories" element={<ProtectedRoute requiredRole={ROLES.SUPERADMIN}><GlobalCategories /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

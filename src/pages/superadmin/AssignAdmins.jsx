@@ -31,7 +31,7 @@ export default function AssignAdmins() {
     }
     setBusyId(u.id);
     try {
-      await assignSchoolAdmin(u.id, schoolId);
+      await assignSchoolAdmin(u.id, schoolId, u.name, schoolName(schoolId));
     } finally {
       setBusyId(null);
     }
