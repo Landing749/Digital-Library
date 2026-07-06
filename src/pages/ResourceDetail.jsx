@@ -94,7 +94,7 @@ export default function ResourceDetail() {
               ))}
             </div>
           </div>
-          <textarea className="input" rows={2} placeholder="Optional comment…" value={myComment} onChange={(e) => setMyComment(e.target.value)} />
+          <textarea className="input" rows={2} maxLength={1000} placeholder="Optional comment…" value={myComment} onChange={(e) => setMyComment(e.target.value)} />
           <div className="flex gap-3">
             <button className="btn-primary" type="submit" disabled={!myRating}>{myReview ? 'Update review' : 'Submit review'}</button>
             {myReview && (
@@ -134,7 +134,13 @@ export default function ResourceDetail() {
               <p className="font-display">{resource.title}</p>
               <button onClick={() => setShowReader(false)} className="btn-ghost">Close ✕</button>
             </div>
-            <iframe title={resource.title} src={resource.fileUrl} className="flex-1 w-full" />
+            <iframe
+              title={resource.title}
+              src={resource.fileUrl}
+              className="flex-1 w-full"
+              sandbox=""
+              referrerPolicy="no-referrer"
+            />
           </div>
         </div>
       )}

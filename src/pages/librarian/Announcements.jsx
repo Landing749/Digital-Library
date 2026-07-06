@@ -47,11 +47,11 @@ export default function Announcements() {
       <form onSubmit={handlePost} className="catalog-card p-6 mt-6 max-w-xl space-y-4">
         <div>
           <label className="label">Title</label>
-          <input className="input" required value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input className="input" required maxLength={300} value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div>
           <label className="label">Message</label>
-          <textarea className="input" rows={3} required value={body} onChange={(e) => setBody(e.target.value)} />
+          <textarea className="input" rows={3} required maxLength={5000} value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
         {message && <p className="text-sm text-stacks-700">{message}</p>}
         <button className="btn-primary" disabled={busy} type="submit">

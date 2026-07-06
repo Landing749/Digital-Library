@@ -5,6 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Digital Library — School Library Management System</title>
     <meta name="description" content="Digital and physical library management for schools." />
+
+    <!--
+      Clickjacking defense.
+      GitHub Pages serves static files with no way to set custom HTTP
+      response headers, so the usual `X-Frame-Options` / CSP
+      `frame-ancestors` header can't be sent here (browsers ignore both when
+      set via a <meta> tag — this is a spec restriction, not an oversight).
+      As a fallback, the page starts hidden and only reveals itself once JS
+      confirms it's not being rendered inside someone else's frame; if it is,
+      it breaks out to the real top-level page instead of rendering at all.
+      See SECURITY.md for the full reasoning and what a header-capable host
+      (Cloudflare Pages, Netlify, Vercel) would add on top of this.
+    -->
+    <style>html { display: none; }</style>
+    <script src="./anti-clickjack.js"></script>
+
+    <!--
+      Content-Security-Policy: restricts script execution to same-origin
+      bundled code only (no inline scripts, no eval), and limits which
+      origins the app can talk to. This is defense-in-depth against XSS —
+      React already escapes rendered text, but this blocks injected script
+      execution even if something slips past that. `frame-ancestors` is
+      included for completeness but, like X-Frame-Options above, browsers
+      only honor it via an HTTP header, not this meta tag.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com;
+      media-src 'self' https://res.cloudinary.com;
+      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://res.cloudinary.com https://api.cloudinary.com;
+      frame-src https://dig-library-2f6f0.firebaseapp.com https://accounts.google.com;
+      worker-src 'self' blob:;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+    " />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

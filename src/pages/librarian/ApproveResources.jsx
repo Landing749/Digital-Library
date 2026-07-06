@@ -33,7 +33,7 @@ export default function ApproveResources() {
               <p className="font-display truncate">{r.title}</p>
               <p className="text-xs text-ink-500">{r.uploaderName} · {r.subject} · {r.materialType} · {formatDate(r.createdAt)}</p>
             </div>
-            <a href={r.fileUrl} target="_blank" rel="noreferrer" className="btn-ghost text-xs">Preview</a>
+            <a href={r.fileUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost text-xs">Preview</a>
             {r.status !== 'approved' && (
               <button className="btn-secondary text-xs" onClick={() => setResourceStatus(r.id, 'approved')}>Approve</button>
             )}

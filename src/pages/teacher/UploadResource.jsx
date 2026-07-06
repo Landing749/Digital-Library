@@ -8,6 +8,18 @@ import AppShell from '../../components/AppShell';
 
 const MATERIAL_TYPES = ['PDF', 'Notes', 'Presentation', 'Reviewer', 'E-book'];
 
+// Client-side checks only — a determined attacker can bypass anything run in
+// the browser. The real enforcement boundary is the Cloudinary upload
+// preset (restrict allowed formats there too; see SECURITY.md). This just
+// gives honest users a fast, friendly error instead of a silent bad upload.
+const ALLOWED_EXTENSIONS = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.odt', '.odp', '.epub', '.txt'];
+const MAX_FILE_MB = 25;
+
+function isAllowedFile(file) {
+  const name = file.name.toLowerCase();
+  return ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext));
+}
+
 export default function UploadResource() {
   const { profile } = useAuth();
   const { data: categories } = useCollection('categories');
@@ -25,6 +37,14 @@ export default function UploadResource() {
     e.preventDefault();
     if (!file) {
       setMessage('Choose a file to upload.');
+      return;
+    }
+    if (!isAllowedFile(file)) {
+      setMessage(`That file type isn't supported. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`);
+      return;
+    }
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      setMessage(`That file is too large — please keep uploads under ${MAX_FILE_MB}MB.`);
       return;
     }
     setBusy(true);
@@ -87,7 +107,14 @@ export default function UploadResource() {
         </div>
         <div>
           <label className="label">File (PDF, PPTX, DOCX…)</label>
-          <input className="input" type="file" required onChange={(e) => setFile(e.target.files[0])} />
+          <input
+            className="input"
+            type="file"
+            required
+            accept={ALLOWED_EXTENSIONS.join(',')}
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+          <p className="text-[11px] text-ink-500 mt-1">Max {MAX_FILE_MB}MB.</p>
         </div>
         {busy && (
           <div className="w-full h-2 bg-parchment-200 rounded-full overflow-hidden">

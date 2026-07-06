@@ -181,6 +181,7 @@ export default function BookDetail() {
           <textarea
             className="input"
             rows={2}
+            maxLength={1000}
             placeholder="Optional comment…"
             value={myComment}
             onChange={(e) => setMyComment(e.target.value)}
@@ -226,7 +227,13 @@ export default function BookDetail() {
               <p className="font-display">{book.title}</p>
               <button onClick={() => setShowReader(false)} className="btn-ghost">Close ✕</button>
             </div>
-            <iframe title={book.title} src={book.fileUrl} className="flex-1 w-full" />
+            <iframe
+              title={book.title}
+              src={book.fileUrl}
+              className="flex-1 w-full"
+              sandbox=""
+              referrerPolicy="no-referrer"
+            />
           </div>
         </div>
       )}

@@ -4,6 +4,10 @@ A React + Firebase Realtime Database app for managing a school's digital
 learning resources and physical library catalog, with role-based access for
 Students, Teachers, Librarians/Admins, and a platform-level Super Admin.
 
+🔒 **See [`SECURITY.md`](./SECURITY.md)** for a full write-up of the app's security
+model — XSS, clickjacking, injection-equivalent risks in Realtime Database rules,
+and what's a genuine fix vs. a best-effort mitigation given GitHub Pages hosting.
+
 ## New in this update
 
 - **Ratings & reviews** — students can rate and review both books and resources (`BookDetail` / `ResourceDetail`).
@@ -14,7 +18,10 @@ Students, Teachers, Librarians/Admins, and a platform-level Super Admin.
 - **Audit log** — school creation, admin assignment, role/status changes, resource approvals, and book archiving are all recorded for the super admin to review.
 - **Global category templates** — super admin curates a shared list of subject categories; librarians can import any of them into their own catalog in one click.
 
-⚠️ **If you deployed `database.rules.json` before this update, redeploy it** — it now includes a `globalCategories` node. Existing `reviews`, `holds`, and `auditLog` rules were already present but are now used by the app.
+⚠️ **If you deployed `database.rules.json` before this update, redeploy it again** — it's had two rounds
+of changes since: the `globalCategories` node was added, and a full security-hardening pass tightened
+validation on `availableCopies`, resource view/download counters, review/hold author names, borrow record
+creation, and user email/name fields. See [`SECURITY.md`](./SECURITY.md) for the reasoning behind each one.
 
 ## Tech stack
 

@@ -7,7 +7,7 @@
       ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')",
-        ".validate": "newData.hasChildren(['name', 'email', 'role']) && ( !data.exists() ? ( auth.uid !== $uid || newData.child('role').val() === 'student' || newData.child('role').val() === 'teacher' || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' ) : ( auth.uid !== $uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' || ( newData.child('role').val() === data.child('role').val() && newData.child('status').val() === data.child('status').val() && newData.child('schoolId').val() === data.child('schoolId').val() ) ) )",
+        ".validate": "newData.hasChildren(['name', 'email', 'role']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 100 && (auth.uid !== $uid || newData.child('email').val() === auth.token.email) && ( !data.exists() ? ( auth.uid !== $uid || newData.child('role').val() === 'student' || newData.child('role').val() === 'teacher' || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' ) : ( auth.uid !== $uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' || ( newData.child('role').val() === data.child('role').val() && newData.child('status').val() === data.child('status').val() && newData.child('schoolId').val() === data.child('schoolId').val() ) ) )",
         "role": {
           ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')"
         },
@@ -25,17 +25,26 @@
 
     "schools": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'superadmin'"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'superadmin'",
+      "$schoolId": {
+        ".validate": "newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 200"
+      }
     },
 
     "globalCategories": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'superadmin'"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'superadmin'",
+      "$categoryId": {
+        ".validate": "newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 200"
+      }
     },
 
     "categories": {
       ".read": "auth != null",
-      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')"
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')",
+      "$categoryId": {
+        ".validate": "newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 200"
+      }
     },
 
     "books": {
@@ -43,7 +52,8 @@
       "$bookId": {
         ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')",
         "availableCopies": {
-          ".write": "auth != null"
+          ".write": "auth != null",
+          ".validate": "newData.isNumber() && newData.val() >= 0 && ( !data.exists() ? newData.val() <= newData.parent().child('totalCopies').val() : ( newData.val() <= data.parent().child('totalCopies').val() && ( newData.val() === data.val() + 1 || newData.val() === data.val() - 1 ) ) )"
         }
       }
     },
@@ -51,7 +61,8 @@
     "borrowRecords": {
       ".read": "auth != null",
       "$recordId": {
-        ".write": "auth != null && (!data.exists() ? newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' : data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')"
+        ".write": "auth != null && (!data.exists() ? newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' : data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')",
+        ".validate": "newData.hasChildren(['bookId', 'userId', 'borrowedAt', 'dueAt']) && root.child('books').child(newData.child('bookId').val()).exists() && newData.child('borrowedAt').isNumber() && newData.child('dueAt').isNumber() && newData.child('dueAt').val() > newData.child('borrowedAt').val() && newData.child('dueAt').val() <= newData.child('borrowedAt').val() + 7776000000"
       }
     },
 
@@ -75,20 +86,22 @@
         ".write": "auth != null && ( !data.exists() ? (newData.child('uploaderUid').val() === auth.uid) : (data.child('uploaderUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin') )",
         ".validate": "( !data.exists() && newData.child('status').val() === 'pending' ) || ( data.exists() && ( data.child('uploaderUid').val() !== auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' || newData.child('status').val() === data.child('status').val() ) )",
         "views": {
-          ".write": "auth != null"
+          ".write": "auth != null",
+          ".validate": "newData.isNumber() && newData.val() >= 0 && ( !data.exists() ? newData.val() === 1 : newData.val() === data.val() + 1 )"
         },
         "downloads": {
-          ".write": "auth != null"
+          ".write": "auth != null",
+          ".validate": "newData.isNumber() && newData.val() >= 0 && ( !data.exists() ? newData.val() === 1 : newData.val() === data.val() + 1 )"
         }
       }
     },
 
     "reviews": {
       ".read": "auth != null",
-      "$bookId": {
+      "$itemId": {
         "$uid": {
           ".write": "auth != null && auth.uid === $uid",
-          ".validate": "newData.hasChildren(['rating', 'userName']) && newData.child('rating').isNumber() && newData.child('rating').val() >= 1 && newData.child('rating').val() <= 5"
+          ".validate": "newData.hasChildren(['rating', 'userName']) && newData.child('rating').isNumber() && newData.child('rating').val() >= 1 && newData.child('rating').val() <= 5 && newData.child('userName').val() === root.child('users').child(auth.uid).child('name').val() && ( !newData.hasChild('comment') || ( newData.child('comment').isString() && newData.child('comment').val().length <= 1000 ) )"
         }
       }
     },
@@ -96,7 +109,8 @@
     "holds": {
       ".read": "auth != null",
       "$holdId": {
-        ".write": "auth != null && ( !data.exists() ? newData.child('uid').val() === auth.uid : ( data.child('uid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' ) )"
+        ".write": "auth != null && ( !data.exists() ? newData.child('uid').val() === auth.uid : ( data.child('uid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin' ) )",
+        ".validate": "newData.hasChildren(['uid', 'bookId', 'bookTitle']) && root.child('books').child(newData.child('bookId').val()).exists() && ( auth.uid !== newData.child('uid').val() || newData.child('userName').val() === root.child('users').child(auth.uid).child('name').val() )"
       }
     },
 
@@ -107,7 +121,10 @@
 
     "announcements": {
       ".read": "auth != null",
-      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')"
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'librarian' || root.child('users').child(auth.uid).child('role').val() === 'superadmin')",
+      "$announcementId": {
+        ".validate": "newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('title').val().length <= 300 && newData.child('body').isString() && newData.child('body').val().length <= 5000"
+      }
     }
   }
 }

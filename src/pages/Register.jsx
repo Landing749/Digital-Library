@@ -55,7 +55,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="catalog-card p-6 space-y-4">
             <div>
               <label className="label">Full name</label>
-              <input className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
+              <input className="input" required maxLength={100} value={form.name} onChange={(e) => set('name', e.target.value)} />
             </div>
             <div>
               <label className="label">Email</label>
